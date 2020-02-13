@@ -76,6 +76,8 @@ class TG_tool(object):
         private = 0
         stopped = 0
         n = added + private + stopped
+
+        users = [] # Accumulated list of users to be added on one attempt
         
         for user in members[self.start::5]:
         # if added % 50 == 0:
@@ -84,72 +86,71 @@ class TG_tool(object):
         #     time.sleep(1000)
      
             if user.bot == False:
+                users.append(user)
+                if len(users) == 5:
+                    try:
 
-                try:
-                    num1 = members.index(user) + 1
-                    num2 = num1 + 1
-                    num3 = num1 + 2
-                    num4 = num1 + 3
-                    # users_to_add = await client.get_entity(str(user.username))
-                    # await self.client.send_message("Hutagg", "Maximum Limit For One Day Reached!!")
-                    await self.client(InviteToChannelRequest(
-                        channel,
-                        [user, members[num1], members[num2], members[num3], members[num4]]
-                    ))
-                    stopped = 0
-                    added += 1
+                        # users_to_add = await client.get_entity(str(user.username))
+                        # await self.client.send_message("Hutagg", "Maximum Limit For One Day Reached!!")
+                        await self.client(InviteToChannelRequest(
+                            channel,
+                            users
+                        ))
+                        stopped = 0
+                        added += 1
 
-                    # print(f"Added {user.username} -- {members.index(user)}")
-                    time.sleep(40)                
+                        # print(f"Added {user.username} -- {members.index(user)}")
+                        time.sleep(40)                
 
-                except UserPrivacyRestrictedError:
-                
-                    private += 1
+                    except UserPrivacyRestrictedError:
                     
-                    time.sleep(1)
+                        private += 1
+                        
+                        time.sleep(1)
 
-                except UserNotMutualContactError:
+                    except UserNotMutualContactError:
 
-                    time.sleep(1)
+                        time.sleep(1)
 
-                except UserChannelsTooMuchError:
-                    time.sleep(1)
-                    # print("There is an error to handle!")
+                    except UserChannelsTooMuchError:
+                        time.sleep(1)
+                        # print("There is an error to handle!")
 
-                except PeerFloodError:
+                    except PeerFloodError:
 
-                    print("Peer Flood Error!!")
+                        print("Peer Flood Error!!")
+                        
+                        stopped += 1
                     
-                    stopped += 1
+                        time.sleep(30)
+                        
+                        if stopped == 5:
+                #             await self.client.send_message(
+                #     "Hutagg", 
+                #     f"""
+                #     Final report:
+                # {added - 1} New Members added to {channel.title}
+                # {private} Members with their privacy on!  
                 
-                    time.sleep(30)
-                    
-                    if stopped == 5:
-            #             await self.client.send_message(
-            #     "Hutagg", 
-            #     f"""
-            #     Final report:
-            # {added - 1} New Members added to {channel.title}
-            # {private} Members with their privacy on!  
-            
-            # Target Group --> {group.title}
-            # Stopped at {members.index(user)}
+                # Target Group --> {group.title}
+                # Stopped at {members.index(user)}
 
-            #     """)
-                        self.start += n
-                        break
+                #     """)
+                            self.start += n
+                            break
 
 
-                except Exception as e:
-                    print(f'{e} Error!')
-                    stopped += 1
-                    time.sleep(1)
+                    except Exception as e:
+                        print(f'{e} Error!')
+                        stopped += 1
+                        time.sleep(1)
 
-                    if stopped == 5:
-                        self.start += n
+                        if stopped == 5:
+                            self.start += n
 
-                        break
-                
+                            break
+            else:
+                pass   
 
         print("DONE... Started Adding For The Next User")
 
@@ -157,6 +158,9 @@ class TG_tool(object):
     def quit(self):
         """Ending One Session"""
         self.client.disconnect()
+
+
+
 
 
 
